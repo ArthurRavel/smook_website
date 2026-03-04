@@ -23,20 +23,31 @@ Smook est un site vitrine pour un projet de coffee shop toulousain lancé en 202
 ## 📁 Structure du projet
 
 ```
-smook/
-├── site/                   # Site web frontend
-│   ├── index.html         # Page d'accueil
-│   ├── carte.html         # Page de la carte complète
+smook_website/
+├── public/                    # Frontend (servi par Express)
+│   ├── index.html             # Page d'accueil
+│   ├── carte.html             # Page de la carte complète
 │   ├── css/
-│   │   └── style.css      # Styles globaux
-│   └── js/
-│       └── script.js      # Scripts et interactivité
-├── database/              # Base de données
-│   └── schema.sql         # Schéma de la base de données
-├── maquette/              # Maquettes et ressources design
-├── TODO.md                # Feuille de route du projet
-└── README.md              # Ce fichier
+│   │   └── style.css          # Styles globaux
+│   ├── js/
+│   │   └── script.js          # Scripts et interactivité
+│   └── img/                   # Logos et images
+│       ├── Logo 1.svg/png     # Logo (periwinkle — fond sombre)
+│       ├── Logo 2.svg/png     # Logo (cream — fond clair)
+│       ├── Logo 4.svg/png     # Logo variante
+│       └── Logo 5.svg/png     # Logo variante
+├── database/                  # Base de données
+│   ├── schema.sql             # Schéma + données initiales
+│   └── MCD.png                # Modèle Conceptuel de Données
+├── docs/                      # Documentation & design
+│   ├── maquette/              # Maquettes wireframe
+│   └── Couleurs.png           # Palette de couleurs
+├── server.js                  # Serveur Express + API REST
+├── package.json               # Dépendances Node.js
+├── TODO.md                    # Feuille de route
+└── README.md                  # Ce fichier
 ```
+
 
 ## 💾 Installation
 
