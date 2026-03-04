@@ -46,7 +46,7 @@ async function initDB() {
         });
 
         if (!dbExists) {
-            console.log('⚠️ Nouvelle base SQLite. Seed en cours...');
+            console.log('Nouvelle base SQLite. Seed en cours...');
             const schemaSql = fs.readFileSync(path.join(__dirname, '..', 'database', 'schema.sql'), 'utf8');
             await db.exec(schemaSql);
         }
