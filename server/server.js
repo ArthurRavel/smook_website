@@ -1,10 +1,15 @@
+require('dotenv').config();
+require('dns').setDefaultResultOrder('ipv4first');
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
+const { Pool } = require('pg');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,48 +18,55 @@ const JWT_SECRET = process.env.JWT_SECRET || 'smook_super_secret_key_123';
 // Middleware
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Configuration Multer pour l'upload d'images
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+// ── Configuration Cloudinary & Multer ──────────────────────────────
+if (process.env.CLOUDINARY_URL) {
+    // Cloudinary automatically parses the CLOUDINARY_URL env var if available
+} else {
+    console.warn("⚠️ CLOUDINARY_URL is missing. Image uploads to Cloudinary will fail.");
+}
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
-// ── Connexion SQLite ───────────────────────────────────────────────
+function uploadToCloudinary(buffer, mimetype) {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            { folder: 'smook_uploads', resource_type: 'image' },
+            (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+            }
+        );
+        const { Readable } = require('stream');
+        const readable = new Readable();
+        readable.push(buffer);
+        readable.push(null);
+        readable.pipe(stream);
+    });
+}
+
+// ── Connexion PostgreSQL ───────────────────────────────────────────
 let db = null;
 
 async function initDB() {
     try {
-        const sqlite3 = require('sqlite3');
-        const { open } = require('sqlite');
-        const dbPath = path.join(__dirname, '..', 'database', 'smook.db');
-        const fs = require('fs');
-
-        const dbExists = fs.existsSync(dbPath);
-
-        db = await open({
-            filename: dbPath,
-            driver: sqlite3.Database
-        });
-
-        if (!dbExists) {
-            console.log('Nouvelle base SQLite. Seed en cours...');
-            const schemaSql = fs.readFileSync(path.join(__dirname, '..', 'database', 'schema.sql'), 'utf8');
-            await db.exec(schemaSql);
+        if (!process.env.DATABASE_URL) {
+            throw new Error("DATABASE_URL manquante. Ajoutez la clé de Neon/Supabase dans .env.");
         }
 
-        await db.get('SELECT 1');
-        console.log('✅ Connecté à SQLite (smook.db)');
+        db = new Pool({
+            connectionString: process.env.DATABASE_URL,
+            ssl: { rejectUnauthorized: false } // Requis pour Neon
+        });
+
+        // Test de connexion
+        await db.query('SELECT 1');
+        console.log('✅ Connecté à PostgreSQL (Neon/Supabase)');
+
+        // Création des tables via le schéma uniquement en dev/manuel
+        // Pour Neon, il est préférable d'exécuter schema.sql manuellement dans leur console
     } catch (err) {
-        console.warn('⚠️ SQLite non disponible — mode fallback (données statiques)');
+        console.warn('⚠️ PostgreSQL non disponible — mode fallback (données statiques)');
         console.warn('   ' + err.message);
         db = null;
     }
@@ -73,7 +85,7 @@ const fallbackProducts = [
     { id: 2, category_id: 1, name: 'Long Black', description: 'Eau chaude sur double espresso.', price: 3.00, nutriscore: 'A', ingredients: '["Café", "Eau"]', is_featured: false, image_url: 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&w=800&q=80', badges: [] },
     { id: 3, category_id: 1, name: 'Cappuccino', description: 'Mousse de lait dense (lait entier ou avoine).', price: 4.50, nutriscore: 'B', ingredients: '["Espresso", "Lait"]', is_featured: false, image_url: 'https://images.unsplash.com/photo-1534778101976-62847782c213?auto=format&fit=crop&w=800&q=80', badges: [] },
     { id: 4, category_id: 1, name: 'Flat White', description: 'Double shot, micromousse fine.', price: 4.80, nutriscore: 'B', ingredients: '["Espresso", "Lait"]', is_featured: false, image_url: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=800&q=80', badges: [] },
-    { id: 5, category_id: 1, name: 'Latte', description: 'Grand classique. Chaud ou glacé.', price: 5.00, nutriscore: 'B', ingredients: '["Espresso", "Lait"]', is_featured: false, image_url: 'https://images.unsplash.com/photo-1551024601-5637f1a8c020?auto=format&fit=crop&w=800&q=80', badges: [] },
+    { id: 5, category_id: 1, name: 'Latte', description: 'Grand classique. Chaud ou glacé.', price: 5.00, nutriscore: 'B', ingredients: '["Espresso", "Lait"]', is_featured: false, image_url: 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=800&q=80', badges: [] },
     { id: 6, category_id: 1, name: 'Mocha', description: 'Chocolat noir 70%, espresso, lait.', price: 5.50, nutriscore: 'D', ingredients: '["Espresso", "Lait", "Chocolat"]', is_featured: false, image_url: 'https://images.unsplash.com/photo-1594910067784-071a1c970341?auto=format&fit=crop&w=800&q=80', badges: [] },
     // Signatures & Wellness
     { id: 7, category_id: 2, name: 'Matcha Latte', description: 'Matcha cérémonial, fouetté minute.', price: 5.50, nutriscore: 'A', ingredients: '["Matcha", "Lait de coco"]', is_featured: true, image_url: 'https://images.unsplash.com/photo-1515823662972-da6a2e4d3114?auto=format&fit=crop&w=800&q=80', badges: ['BIO'] },
@@ -119,7 +131,9 @@ app.post('/api/login', async (req, res) => {
         const { username, password } = req.body;
         if (!db) return res.status(503).json({ error: 'Database not available' });
 
-        const user = await db.get('SELECT * FROM users WHERE username = ?', username);
+        const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+        const user = result.rows[0];
+
         if (!user) return res.status(401).json({ error: 'Identifiants incorrects' });
 
         const validPassword = await bcrypt.compare(password, user.password_hash);
@@ -134,14 +148,14 @@ app.post('/api/login', async (req, res) => {
 });
 
 // POST /api/upload
-app.post('/api/upload', authenticateToken, upload.single('image'), (req, res) => {
+app.post('/api/upload', authenticateToken, upload.single('image'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
-        const imageUrl = `/uploads/${req.file.filename}`;
-        res.json({ imageUrl });
+        const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
+        res.json({ imageUrl: result.secure_url });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Erreur serveur lors de l\'upload' });
+        console.error('Cloudinary upload error:', err);
+        res.status(500).json({ error: 'Erreur lors de l\'upload sur Cloudinary: ' + (err.message || err) });
     }
 });
 
@@ -149,8 +163,8 @@ app.post('/api/upload', authenticateToken, upload.single('image'), (req, res) =>
 app.get('/api/categories', async (req, res) => {
     try {
         if (db) {
-            const rows = await db.all('SELECT * FROM categories ORDER BY display_order');
-            return res.json(rows);
+            const result = await db.query('SELECT * FROM categories ORDER BY display_order');
+            return res.json(result.rows);
         }
         res.json(fallbackCategories);
     } catch (err) {
@@ -163,21 +177,21 @@ app.get('/api/categories', async (req, res) => {
 app.get('/api/products', async (req, res) => {
     try {
         if (db) {
-            const products = await db.all(`
+            const result = await db.query(`
                 SELECT p.*, 
-                       GROUP_CONCAT(b.name) AS badge_names
+                       STRING_AGG(b.name, ',') AS badge_names
                 FROM products p
                 LEFT JOIN product_badges pb ON p.id = pb.product_id
                 LEFT JOIN badges b ON pb.badge_id = b.id
                 GROUP BY p.id
                 ORDER BY p.category_id, p.name
             `);
-            const result = products.map(p => ({
+            const products = result.rows.map(p => ({
                 ...p,
                 is_featured: Boolean(p.is_featured),
                 badges: p.badge_names ? p.badge_names.split(',') : []
             }));
-            return res.json(result);
+            return res.json(products);
         }
         res.json(fallbackProducts);
     } catch (err) {
@@ -190,21 +204,21 @@ app.get('/api/products', async (req, res) => {
 app.get('/api/products/featured', async (req, res) => {
     try {
         if (db) {
-            const products = await db.all(`
+            const result = await db.query(`
                 SELECT p.*, 
-                       GROUP_CONCAT(b.name) AS badge_names
+                       STRING_AGG(b.name, ',') AS badge_names
                 FROM products p
                 LEFT JOIN product_badges pb ON p.id = pb.product_id
                 LEFT JOIN badges b ON pb.badge_id = b.id
-                WHERE p.is_featured = 1
+                WHERE p.is_featured = TRUE
                 GROUP BY p.id
             `);
-            const result = products.map(p => ({
+            const products = result.rows.map(p => ({
                 ...p,
                 is_featured: Boolean(p.is_featured),
                 badges: p.badge_names ? p.badge_names.split(',') : []
             }));
-            return res.json(result);
+            return res.json(products);
         }
         res.json(fallbackProducts.filter(p => p.is_featured));
     } catch (err) {
@@ -218,15 +232,17 @@ app.get('/api/products/:id', async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         if (db) {
-            const p = await db.get(`
+            const result = await db.query(`
                 SELECT p.*, 
-                       GROUP_CONCAT(b.name) AS badge_names
+                       STRING_AGG(b.name, ',') AS badge_names
                 FROM products p
                 LEFT JOIN product_badges pb ON p.id = pb.product_id
                 LEFT JOIN badges b ON pb.badge_id = b.id
-                WHERE p.id = ?
+                WHERE p.id = $1
                 GROUP BY p.id
-            `, id);
+            `, [id]);
+
+            const p = result.rows[0];
             if (!p) return res.status(404).json({ error: 'Produit non trouvé' });
             p.is_featured = Boolean(p.is_featured);
             return res.json({ ...p, badges: p.badge_names ? p.badge_names.split(',') : [] });
@@ -246,9 +262,10 @@ app.post('/api/products', authenticateToken, async (req, res) => {
         const { category_id, name, description, price, nutriscore, ingredients, is_featured, image_url } = req.body;
         if (!db) return res.status(503).json({ error: 'Database not available' });
 
-        const result = await db.run(`
+        const result = await db.query(`
             INSERT INTO products (category_id, name, description, price, nutriscore, ingredients, is_featured, image_url)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING id
         `, [
             category_id || null,
             name,
@@ -256,11 +273,11 @@ app.post('/api/products', authenticateToken, async (req, res) => {
             price || 0,
             nutriscore || null,
             ingredients ? JSON.stringify(ingredients) : '[]',
-            is_featured ? 1 : 0,
+            Boolean(is_featured),
             image_url || ''
         ]);
 
-        res.status(201).json({ id: result.lastID, success: true });
+        res.status(201).json({ id: result.rows[0].id, success: true });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erreur serveur lors de la création' });
@@ -274,10 +291,10 @@ app.put('/api/products/:id', authenticateToken, async (req, res) => {
         const { category_id, name, description, price, nutriscore, ingredients, is_featured, image_url } = req.body;
         if (!db) return res.status(503).json({ error: 'Database not available' });
 
-        await db.run(`
+        await db.query(`
             UPDATE products 
-            SET category_id = ?, name = ?, description = ?, price = ?, nutriscore = ?, ingredients = ?, is_featured = ?, image_url = ?
-            WHERE id = ?
+            SET category_id = $1, name = $2, description = $3, price = $4, nutriscore = $5, ingredients = $6, is_featured = $7, image_url = $8
+            WHERE id = $9
         `, [
             category_id || null,
             name,
@@ -285,7 +302,7 @@ app.put('/api/products/:id', authenticateToken, async (req, res) => {
             price || 0,
             nutriscore || null,
             ingredients ? JSON.stringify(ingredients) : '[]',
-            is_featured ? 1 : 0,
+            Boolean(is_featured),
             image_url || '',
             id
         ]);
@@ -303,7 +320,7 @@ app.delete('/api/products/:id', authenticateToken, async (req, res) => {
         const id = parseInt(req.params.id);
         if (!db) return res.status(503).json({ error: 'Database not available' });
 
-        await db.run('DELETE FROM products WHERE id = ?', id);
+        await db.query('DELETE FROM products WHERE id = $1', [id]);
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -315,8 +332,8 @@ app.delete('/api/products/:id', authenticateToken, async (req, res) => {
 app.get('/api/reviews', async (req, res) => {
     try {
         if (db) {
-            const rows = await db.all('SELECT * FROM reviews WHERE is_published = 1 ORDER BY created_at DESC');
-            return res.json(rows);
+            const result = await db.query('SELECT * FROM reviews WHERE is_published = TRUE ORDER BY created_at DESC');
+            return res.json(result.rows);
         }
         res.json(fallbackReviews);
     } catch (err) {
