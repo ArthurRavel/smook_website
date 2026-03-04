@@ -71,7 +71,7 @@ INSERT INTO categories (name, slug, display_order) VALUES
 INSERT INTO products (category_id, name, description, price, nutriscore, ingredients, is_featured, image_url) VALUES
 -- Café
 (1, 'Espresso', 'Double shot. Origine Éthiopie/Brésil.', 2.50, 'A', '["Café"]', 0, 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd'),
-(1, 'Latte', 'Grand classique. Chaud ou glacé.', 5.00, 'B', '["Espresso", "Lait"]', 0, 'https://images.unsplash.com/photo-1551024601-5637f1a8c020'),
+(1, 'Latte', 'Grand classique. Chaud ou glacé.', 5.00, 'B', '["Espresso", "Lait"]', 0, 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f'),
 
 -- Signatures
 (2, 'Matcha Latte', 'Matcha cérémonial, fouetté minute.', 5.50, 'A', '["Matcha", "Lait de coco"]', 1, 'https://images.unsplash.com/photo-1515823662972-da6a2e4d3114'),
