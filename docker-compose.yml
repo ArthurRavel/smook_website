@@ -1,0 +1,30 @@
+services:
+  server:
+    build: ./server
+    container_name: smook_server
+    ports:
+      - "3000:3000"
+    volumes:
+      # Synchronisation du code en temps réel pour le développement
+      - ./server:/app
+      # Évite que le node_modules Windows de l'hôte n'écrase le node_modules Linux du conteneur
+      - /app/node_modules
+    env_file:
+      - ./server/.env
+    environment:
+      - NODE_ENV=development
+
+  client:
+    build: ./client
+    container_name: smook_client
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      # Indique au proxy Vite d'appeler le conteneur `server` sur le réseau Docker
+      - VITE_API_TARGET=http://server:3000
+      # Force le mode Polling (nécessaire sous Windows WSL2 pour que le hot-reload fonctionne)
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
