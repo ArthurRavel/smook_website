@@ -3,16 +3,24 @@ import { Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import ProductModal from '../components/ProductModal'
 
+const STATIC_REVIEWS = [
+    { id: 1, author_name: 'Camille R.', rating: 5, content: 'Un endroit incroyable ! Les boissons sont délicieuses et le cadre est super agréable. Je recommande vivement le matcha latte.' },
+    { id: 2, author_name: 'Thomas B.', rating: 5, content: "Enfin un café healthy qui ne sacrifie pas le goût. Les pâtisseries sont faites maison et c'est vraiment excellent." },
+    { id: 3, author_name: 'Léa M.', rating: 5, content: 'Je viens ici chaque semaine, c\'est devenu mon rituel. Le personnel est adorable et les produits sont toujours frais.' },
+    { id: 4, author_name: 'Antoine D.', rating: 5, content: 'Le meilleur smoothie bowl de Toulouse ! Des ingrédients de qualité, une belle présentation et un service au top.' },
+    { id: 5, author_name: 'Sophie L.', rating: 5, content: 'Smook a changé ma façon de voir les cafés. Zéro sucre raffiné et pourtant tout est divinement bon. À découvrir absolument !' },
+]
+
 function Home() {
     const [featured, setFeatured] = useState([])
-    const [reviews, setReviews] = useState([])
+    const [reviews, setReviews] = useState(STATIC_REVIEWS)
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [formSuccess, setFormSuccess] = useState(false)
 
     useEffect(() => {
         fetch('/api/products/featured').then(r => r.json()).then(setFeatured).catch(console.error)
-        fetch('/api/reviews').then(r => r.json()).then(setReviews).catch(console.error)
     }, [])
+
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
@@ -151,31 +159,28 @@ function Home() {
             </section>
 
             {/* REVIEWS */}
-            <section id="reviews" className="py-20 bg-offwhite">
-                <div className="max-w-[1200px] mx-auto px-8">
-                    <div className="text-center mb-14 animate-on-scroll">
-                        <span className="inline-flex items-center gap-2 bg-cream/70 text-walnut text-[13px]
-              uppercase tracking-[2px] font-semibold px-5 py-2.5 rounded-full mb-4">
-                            💬 Témoignages
-                        </span>
-                        <h2 className="font-display text-4xl md:text-5xl font-bold mb-3">Avis Clients</h2>
-                        <p className="text-gray-500">Ce que nos clients pensent de Smook.</p>
-                    </div>
+            <section id="reviews" className="py-20 bg-offwhite overflow-hidden">
+                <div className="text-center mb-14 animate-on-scroll">
+                    <span className="inline-flex items-center gap-2 bg-cream/70 text-walnut text-[13px]
+          uppercase tracking-[2px] font-semibold px-5 py-2.5 rounded-full mb-4">
+                        💬 Témoignages
+                    </span>
+                    <h2 className="font-display text-4xl md:text-5xl font-bold mb-3">Avis Clients</h2>
+                    <p className="text-gray-500">Ce que nos clients pensent de Smook.</p>
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {reviews.length === 0 ? (
-                            Array.from({ length: 3 }).map((_, i) => <div key={i} className="skeleton h-[200px]" />)
-                        ) : (
-                            reviews.map(r => (
-                                <div key={r.id} className="bg-white p-8 rounded-2xl border border-gray-200
-                  hover:-translate-y-0.5 hover:shadow-md transition-all animate-on-scroll">
-                                    <div className="text-amber-400 text-lg mb-4 tracking-widest">{stars(r.rating)}</div>
-                                    <p className="text-gray-600 mb-4 italic leading-relaxed">"{r.content}"</p>
-                                    <span className="text-walnut font-semibold text-sm">{r.author_name}</span>
-                                </div>
-                            ))
-                        )}
-                    </div>
+                <div
+                    className="flex gap-6 w-max"
+                    style={{ animation: 'marquee 30s linear infinite' }}
+                    onMouseEnter={e => e.currentTarget.style.animationPlayState = 'paused'}
+                    onMouseLeave={e => e.currentTarget.style.animationPlayState = 'running'}>
+                    {[...reviews, ...reviews].map((r, i) => (
+                        <div key={i} className="w-[380px] flex-shrink-0 bg-white p-8 rounded-2xl border border-gray-200 cursor-default">
+                            <div className="text-amber-400 text-lg mb-4 tracking-widest">{stars(r.rating)}</div>
+                            <p className="text-gray-600 mb-4 italic leading-relaxed">"{r.content}"</p>
+                            <span className="text-walnut font-semibold text-sm">{r.author_name}</span>
+                        </div>
+                    ))}
                 </div>
             </section>
 

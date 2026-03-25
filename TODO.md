@@ -1,6 +1,6 @@
 # TODO - Projet Smook
 
-## Feuille de route - Développement
+## Feuille de route - Done
 
 ### 🎨 Interface Utilisateur
 - **Refonte de la mise en page** : Adapter l'interface pour correspondre intégralement à la direction artistique validée
