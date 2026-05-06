@@ -358,8 +358,17 @@ app.post('/api/contact', async (req, res) => {
     res.json({ success: true, message: 'Message reçu ! Merci.' });
 });
 
-// API uniquement — le frontend React est servi par Vite en dev
+// ── Distribution du Frontend en Production ───────────────────────────
+// En production, on sert les fichiers statiques compilés de React
+if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
+    const clientBuildPath = path.join(__dirname, '..', 'client', 'dist');
+    app.use(express.static(clientBuildPath));
 
+    // Toutes les autres requêtes (non-API) sont redirigées vers index.html pour React Router
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(clientBuildPath, 'index.html'));
+    });
+}
 // ── Lancement ───────────────────────────────────────────────────────
 initDB().then(() => {
     app.listen(PORT, () => {
