@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import ProductModal from '../components/ProductModal'
+import mascotte1 from '../assets/mascottes/Smook-mascotte-1.png'
+import mascotte2 from '../assets/mascottes/Smook-mascotte-2.png'
+import mascotte3 from '../assets/mascottes/Smook-mascotte-3.png'
+import mascotte4 from '../assets/mascottes/Smook-mascotte-4.png'
 
 const STATIC_REVIEWS = [
     { id: 1, author_name: 'Camille R.', rating: 5, content: 'Un endroit incroyable ! Les boissons sont délicieuses et le cadre est super agréable. Je recommande vivement le matcha latte.' },
@@ -57,15 +61,15 @@ function Home() {
             {/* HERO */}
             <section className="pt-32 pb-20 bg-gradient-to-b from-periwinkle-light via-cream-light to-offwhite text-center">
                 <div className="max-w-[1200px] mx-auto px-8">
-                    <span className="inline-flex items-center gap-2 bg-cream/70 border border-cream-dark/30
-            text-walnut text-[13px] uppercase tracking-[2px] font-semibold px-5 py-2.5 rounded-full
-            mb-6 backdrop-blur-sm">
-                        ☕ Toulouse · Since 2025
-                    </span>
-                    <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] mb-6">
-                        Healthy,<br />
-                        <span className="italic font-normal text-walnut-medium">sans compromis</span><br />
-                        sur le goût.
+                    <img
+                        src={mascotte1}
+                        alt=""
+                        aria-hidden="true"
+                        className="w-36 md:w-48 mx-auto mb-6 drop-shadow-xl select-none pointer-events-none"
+                        style={{ animation: 'float 4s ease-in-out infinite' }}
+                    />
+                    <h1 className="font-brand text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.95] mb-6">
+                        Powered by <span className="text-walnut-medium">Coffee</span>
                     </h1>
                     <p className="text-gray-500 text-lg max-w-[500px] mx-auto mb-10 leading-relaxed">
                         Des boissons artisanales et pâtisseries saines, préparées avec amour chaque jour.
@@ -85,17 +89,22 @@ function Home() {
                 </div>
             </section>
 
-            {/* STATS */}
+            {/* INFOS */}
             <section className="py-16 bg-offwhite">
                 <div className="max-w-[1200px] mx-auto px-8">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {[['100%', 'Fait Maison'], ['0%', 'Sucre Raffiné'], ['4.9', 'Avis Google']].map(([val, label]) => (
-                            <div key={label} className="bg-white p-10 text-center rounded-2xl border border-gray-200
-                hover:-translate-y-0.5 hover:shadow-md transition-all animate-on-scroll">
-                                <span className="block text-5xl font-bold text-walnut font-display">{val}</span>
-                                <span className="text-xs uppercase tracking-[2px] text-gray-400 font-medium mt-2 block">{label}</span>
-                            </div>
-                        ))}
+                        <div className="bg-white p-10 text-center rounded-2xl border border-gray-200 hover:-translate-y-0.5 hover:shadow-md transition-all">
+                            <span className="block text-xs uppercase tracking-[2px] text-gray-400 font-medium mb-2">Où nous trouver</span>
+                            <span className="block font-semibold text-walnut leading-relaxed">12 rue Exemple<br />31000 Toulouse</span>
+                        </div>
+                        <div className="bg-white p-10 text-center rounded-2xl border border-gray-200 hover:-translate-y-0.5 hover:shadow-md transition-all">
+                            <span className="block text-xs uppercase tracking-[2px] text-gray-400 font-medium mb-2">On vous attend</span>
+                            <span className="block font-semibold text-walnut leading-relaxed">Du lundi au samedi<br />8h – 18h</span>
+                        </div>
+                        <div className="bg-white p-10 text-center rounded-2xl border border-gray-200 hover:-translate-y-0.5 hover:shadow-md transition-all">
+                            <span className="block text-xs uppercase tracking-[2px] text-gray-400 font-medium mb-2">On vous répond</span>
+                            <span className="block font-semibold text-walnut leading-relaxed">05 61 00 00 00<br />hello@smook.cafe</span>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -104,11 +113,8 @@ function Home() {
             <section id="featured" className="py-20 bg-offwhite">
                 <div className="max-w-[1200px] mx-auto px-8">
                     <div className="text-center mb-14 animate-on-scroll">
-                        <span className="inline-flex items-center gap-2 bg-cream/70 text-walnut text-[13px]
-              uppercase tracking-[2px] font-semibold px-5 py-2.5 rounded-full mb-4">
-                            ✨ Sélection
-                        </span>
-                        <h2 className="font-display text-4xl md:text-5xl font-bold mb-3">Nos Incontournables</h2>
+                        <img src={mascotte2} alt="" aria-hidden="true" className="w-16 mx-auto mb-4 select-none pointer-events-none" />
+                        <h2 className="font-brand text-4xl md:text-5xl font-bold mb-3">Nos Incontournables</h2>
                         <p className="text-gray-500 max-w-lg mx-auto">Les coups de cœur de nos clients, à découvrir en priorité.</p>
                     </div>
 
@@ -128,11 +134,8 @@ function Home() {
             <section id="concept" className="py-20 bg-white">
                 <div className="max-w-[1200px] mx-auto px-8">
                     <div className="text-center mb-14 animate-on-scroll">
-                        <span className="inline-flex items-center gap-2 bg-cream/70 text-walnut text-[13px]
-              uppercase tracking-[2px] font-semibold px-5 py-2.5 rounded-full mb-4">
-                            🌿 Philosophie
-                        </span>
-                        <h2 className="font-display text-4xl md:text-5xl font-bold">Simple. Bon.</h2>
+                        <img src={mascotte4} alt="" aria-hidden="true" className="w-16 mx-auto mb-4 select-none pointer-events-none" />
+                        <h2 className="font-brand text-4xl md:text-5xl font-bold">Simple. Bon.</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center animate-on-scroll">
@@ -152,8 +155,16 @@ function Home() {
                                 ))}
                             </ul>
                         </div>
-                        <div className="bg-cover bg-center rounded-2xl min-h-[350px] md:min-h-[475px]"
-                            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=1200&q=80')" }} />
+                        <div className="relative">
+                            <div className="bg-cover bg-center rounded-2xl min-h-[350px] md:min-h-[475px]"
+                                style={{ backgroundImage: "url('https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=1200&q=80')" }} />
+                            <img
+                                src={mascotte3}
+                                alt=""
+                                aria-hidden="true"
+                                className="hidden md:block absolute -top-8 -right-8 w-[110px] drop-shadow-xl select-none pointer-events-none"
+                            />
+                        </div>
                     </div>
                 </div>
             </section>
@@ -161,11 +172,8 @@ function Home() {
             {/* REVIEWS */}
             <section id="reviews" className="py-20 bg-offwhite overflow-hidden">
                 <div className="text-center mb-14 animate-on-scroll">
-                    <span className="inline-flex items-center gap-2 bg-cream/70 text-walnut text-[13px]
-          uppercase tracking-[2px] font-semibold px-5 py-2.5 rounded-full mb-4">
-                        💬 Témoignages
-                    </span>
-                    <h2 className="font-display text-4xl md:text-5xl font-bold mb-3">Avis Clients</h2>
+                    <img src={mascotte1} alt="" aria-hidden="true" className="w-16 mx-auto mb-4 select-none pointer-events-none" />
+                    <h2 className="font-brand text-4xl md:text-5xl font-bold mb-3">Avis Clients</h2>
                     <p className="text-gray-500">Ce que nos clients pensent de Smook.</p>
                 </div>
 
@@ -188,22 +196,27 @@ function Home() {
             <section id="contact" className="py-20 bg-white">
                 <div className="max-w-[1200px] mx-auto px-8">
                     <div className="text-center mb-14 animate-on-scroll">
-                        <span className="inline-flex items-center gap-2 bg-cream/70 text-walnut text-[13px]
-              uppercase tracking-[2px] font-semibold px-5 py-2.5 rounded-full mb-4">
-                            📍 Nous trouver
-                        </span>
-                        <h2 className="font-display text-4xl md:text-5xl font-bold">Contact</h2>
+                        <img src={mascotte3} alt="" aria-hidden="true" className="w-16 mx-auto mb-4 select-none pointer-events-none" />
+                        <h2 className="font-brand text-4xl md:text-5xl font-bold">Contact</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-0 rounded-2xl overflow-hidden animate-on-scroll">
-                        <div className="bg-walnut text-white p-10 md:p-14 flex flex-col justify-center">
-                            <h3 className="font-display text-2xl font-bold mb-4">Venez nous voir</h3>
-                            <p className="leading-[2] text-white/80">
-                                📍 12 rue Exemple, 31000 Toulouse<br />
-                                ⏰ Lun – Sam : 8h – 18h<br />
-                                ☎️ 05 61 00 00 00<br />
-                                ✉️ hello@smook.cafe
-                            </p>
+                        <div className="bg-walnut text-white p-10 md:p-14 flex flex-col justify-between">
+                            <div>
+                                <h3 className="font-display text-2xl font-bold mb-4">Venez nous voir</h3>
+                                <p className="leading-[2] text-white/80">
+                                    📍 12 rue Exemple, 31000 Toulouse<br />
+                                    ⏰ Lun – Sam : 8h – 18h<br />
+                                    ☎️ 05 61 00 00 00<br />
+                                    ✉️ hello@smook.cafe
+                                </p>
+                            </div>
+                            <img
+                                src={mascotte4}
+                                alt=""
+                                aria-hidden="true"
+                                className="hidden md:block w-[110px] mt-8 self-end drop-shadow-xl select-none pointer-events-none"
+                            />
                         </div>
                         <div className="bg-offwhite p-10 md:p-14">
                             <h3 className="font-display text-2xl font-bold mb-6">Écrivez-nous</h3>

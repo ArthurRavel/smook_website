@@ -1,5 +1,8 @@
+const isValidUrl = (url) => url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/'))
+
 function ProductCard({ product, onClick }) {
     const badges = product.badges || []
+    const validImage = isValidUrl(product.image_url)
 
     return (
         <article
@@ -7,12 +10,16 @@ function ProductCard({ product, onClick }) {
         hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 group"
             onClick={() => onClick(product)}>
             <div className="aspect-square bg-periwinkle-light overflow-hidden relative">
-                <img
-                    src={product.image_url}
-                    alt={product.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-[1.08] transition-transform duration-500"
-                />
+                {validImage ? (
+                    <img
+                        src={product.image_url}
+                        alt={product.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-[1.08] transition-transform duration-500"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-periwinkle-dark/40 text-4xl select-none">☕</div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-walnut/5" />
             </div>
             <div className="p-5">
@@ -25,9 +32,16 @@ function ProductCard({ product, onClick }) {
                         </span>
                     ))}
                 </h3>
-                <span className="font-semibold text-walnut-medium text-[15px]">
-                    {Number(product.price).toFixed(2).replace('.', ',')}€
-                </span>
+                {product.sale_price ? (
+                    <span className="flex items-center gap-2 flex-wrap">
+                        <span className="line-through text-gray-400 text-sm">{Number(product.price).toFixed(2).replace('.', ',')}€</span>
+                        <span className="font-bold text-red-600 text-[15px]">{Number(product.sale_price).toFixed(2).replace('.', ',')}€</span>
+                    </span>
+                ) : (
+                    <span className="font-semibold text-walnut-medium text-[15px]">
+                        {Number(product.price).toFixed(2).replace('.', ',')}€
+                    </span>
+                )}
             </div>
         </article>
     )

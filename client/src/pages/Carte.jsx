@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import ProductModal from '../components/ProductModal'
+import mascotte2 from '../assets/mascottes/Smook-mascotte-2.png'
 
 function Carte() {
     const [categories, setCategories] = useState([])
@@ -36,11 +37,8 @@ function Carte() {
             {/* HERO */}
             <section className="pt-32 pb-12 bg-gradient-to-b from-periwinkle-light via-cream-light to-offwhite text-center">
                 <div className="max-w-[1200px] mx-auto px-8">
-                    <span className="inline-flex items-center gap-2 bg-cream/70 text-walnut text-[13px]
-            uppercase tracking-[2px] font-semibold px-5 py-2.5 rounded-full mb-6">
-                        ☕ La Carte Complète
-                    </span>
-                    <h1 className="font-display text-5xl md:text-7xl font-bold leading-[0.95] mb-4">
+                    <img src={mascotte2} alt="" aria-hidden="true" className="w-16 mx-auto mb-4 select-none pointer-events-none" />
+                    <h1 className="font-brand text-5xl md:text-7xl font-bold leading-[0.95] mb-4">
                         Tous nos<br /><span className="italic font-normal text-walnut-medium">choix.</span>
                     </h1>
                     <p className="text-gray-500 text-lg">Sélectionnés avec soin, préparés à la commande.</p>
@@ -73,10 +71,18 @@ function Carte() {
                                                 className="bg-white rounded-2xl p-6 border border-gray-200 cursor-pointer relative
                           hover:-translate-y-0.5 hover:shadow-lg hover:border-cream transition-all group"
                                                 onClick={() => setSelectedProduct(p)}>
-                                                <span className="absolute top-5 right-5 text-walnut-medium font-bold text-xl
-                          group-hover:text-walnut transition-colors">
-                                                    {Number(p.price).toFixed(2).replace('.', ',')}€
-                                                </span>
+                                                <div className="absolute top-5 right-5 text-right">
+                                                    {p.sale_price ? (
+                                                        <>
+                                                            <span className="block line-through text-gray-400 text-sm">{Number(p.price).toFixed(2).replace('.', ',')}€</span>
+                                                            <span className="block font-bold text-red-600 text-lg">{Number(p.sale_price).toFixed(2).replace('.', ',')}€</span>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-walnut-medium font-bold text-xl group-hover:text-walnut transition-colors">
+                                                            {Number(p.price).toFixed(2).replace('.', ',')}€
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <h3 className="text-base font-semibold pr-16 mb-1.5">
                                                     {p.name}
                                                     {p.badges && p.badges.map((b, i) => (

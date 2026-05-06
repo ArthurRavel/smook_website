@@ -27,6 +27,7 @@ export default {
       fontFamily: {
         sans: ['Outfit', 'sans-serif'],
         display: ['Playfair Display', 'serif'],
+        brand: ['Slow Play', 'serif'],
       },
       borderRadius: {
         'xl': '14px',

@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+    font-family: 'Slow Play';
+    src: url('./assets/typo/Slow Play.otf') format('opentype'),
+         url('./assets/typo/Slow Play.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* ── Nutriscore colors (kept as custom since they're semantic) ── */
 .ns-a {
     background-color: #008f5d;
@@ -46,4 +55,10 @@ html {
 @keyframes marquee {
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
+}
+
+/* ── Mascotte float ── */
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(-2deg); }
+    50% { transform: translateY(-14px) rotate(2deg); }
 }

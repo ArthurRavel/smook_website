@@ -18,7 +18,7 @@ function Admin() {
 
     const emptyProduct = {
         category_id: '', name: '', description: '', price: '',
-        nutriscore: '', ingredients: '', is_featured: false, image_url: ''
+        sale_price: '', nutriscore: '', ingredients: '', is_featured: false, image_url: ''
     }
 
     const fetchData = () => {
@@ -58,11 +58,12 @@ function Admin() {
         const url = isEditing ? `/api/products/${editingProduct.id}` : '/api/products'
         const method = isEditing ? 'PUT' : 'POST'
 
-        // Convert components back to API format (ingredients array to JSON, price to number)
+        // Convert components back to API format
         const payload = { ...editingProduct }
         if (typeof payload.ingredients === 'string') {
             payload.ingredients = payload.ingredients.split(',').map(s => s.trim()).filter(Boolean)
         }
+        payload.sale_price = payload.sale_price ? parseFloat(payload.sale_price) : null
 
         try {
             const token = localStorage.getItem('smookToken')
@@ -104,6 +105,12 @@ function Admin() {
             if (res.status === 401 || res.status === 403) {
                 alert("Session expirée")
                 handleLogout()
+                return
+            }
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                alert("Erreur lors de la sauvegarde : " + (err.error || `Statut ${res.status}`))
                 return
             }
 
@@ -163,15 +170,16 @@ function Admin() {
                                 <th className="p-4 font-semibold">Nom</th>
                                 <th className="p-4 font-semibold">Catégorie</th>
                                 <th className="p-4 font-semibold">Prix</th>
+                                <th className="p-4 font-semibold text-center">Solde</th>
                                 <th className="p-4 font-semibold text-center">En Vedette</th>
                                 <th className="p-4 font-semibold text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="6" className="p-8 text-center text-gray-400 font-medium">Chargement...</td></tr>
+                                <tr><td colSpan="7" className="p-8 text-center text-gray-400 font-medium">Chargement...</td></tr>
                             ) : products.length === 0 ? (
-                                <tr><td colSpan="6" className="p-8 text-center text-gray-400 font-medium">Aucun produit trouvé.</td></tr>
+                                <tr><td colSpan="7" className="p-8 text-center text-gray-400 font-medium">Aucun produit trouvé.</td></tr>
                             ) : (
                                 products.map(p => {
                                     const cat = categories.find(c => c.id === p.category_id)
@@ -184,7 +192,17 @@ function Admin() {
                                             </td>
                                             <td className="p-4 font-medium">{p.name}</td>
                                             <td className="p-4 text-gray-500 text-sm">{cat ? cat.name : 'Non classée'}</td>
-                                            <td className="p-4 font-medium">{Number(p.price).toFixed(2)} €</td>
+                                            <td className="p-4 font-medium">
+                                                {p.sale_price ? (
+                                                    <span className="flex items-center gap-2">
+                                                        <span className="line-through text-gray-400">{Number(p.price).toFixed(2)} €</span>
+                                                        <span className="text-red-600 font-bold">{Number(p.sale_price).toFixed(2)} €</span>
+                                                    </span>
+                                                ) : `${Number(p.price).toFixed(2)} €`}
+                                            </td>
+                                            <td className="p-4 text-center">
+                                                {p.sale_price ? <span className="text-xs font-bold text-white bg-red-500 px-2 py-0.5 rounded-full">Solde</span> : <span className="text-gray-300">—</span>}
+                                            </td>
                                             <td className="p-4 text-center">
                                                 {p.is_featured ? <span className="text-amber-500">★</span> : <span className="text-gray-300">☆</span>}
                                             </td>
@@ -230,6 +248,11 @@ function Admin() {
                                 <div>
                                     <label className="block text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">Prix (€) *</label>
                                     <input type="number" step="0.01" required value={editingProduct.price} onChange={e => setEditingProduct({ ...editingProduct, price: e.target.value })} className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:border-walnut" />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">Prix soldé (€) <span className="text-gray-400 normal-case font-normal">— laisser vide si aucun</span></label>
+                                    <input type="number" step="0.01" min="0" value={editingProduct.sale_price || ''} onChange={e => setEditingProduct({ ...editingProduct, sale_price: e.target.value || null })} placeholder="Ex : 3.90" className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:border-red-400 placeholder:text-gray-300" />
                                 </div>
 
                                 <div className="col-span-2">

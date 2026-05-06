@@ -9,11 +9,14 @@ function parseIngredients(raw) {
     }
 }
 
+const isValidUrl = (url) => url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/'))
+
 function ProductModal({ product, onClose }) {
     if (!product) return null
 
     const ns = product.nutriscore || ''
     const badges = product.badges || []
+    const validImage = isValidUrl(product.image_url)
 
     return (
         <div
@@ -23,9 +26,10 @@ function ProductModal({ product, onClose }) {
         overflow-hidden animate-fade-up">
                 {/* Image */}
                 <div
-                    className="bg-periwinkle-light bg-cover bg-center min-h-[220px] md:min-h-[400px]"
-                    style={{ backgroundImage: `url('${product.image_url || ''}')` }}
-                />
+                    className="bg-periwinkle-light bg-cover bg-center min-h-[220px] md:min-h-[400px] flex items-center justify-center"
+                    style={validImage ? { backgroundImage: `url('${product.image_url}')` } : {}}>
+                    {!validImage && <span className="text-6xl text-periwinkle-dark/40 select-none">☕</span>}
+                </div>
 
                 {/* Details */}
                 <div className="p-10 flex flex-col justify-center relative">
@@ -56,6 +60,17 @@ function ProductModal({ product, onClose }) {
                     )}
 
                     <h2 className="font-display text-3xl font-bold mt-4 mb-2">{product.name}</h2>
+
+                    {product.sale_price ? (
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="line-through text-gray-400 text-lg">{Number(product.price).toFixed(2).replace('.', ',')}€</span>
+                            <span className="font-bold text-red-600 text-2xl">{Number(product.sale_price).toFixed(2).replace('.', ',')}€</span>
+                            <span className="text-xs font-bold text-white bg-red-500 px-2 py-0.5 rounded-full uppercase tracking-wide">Solde</span>
+                        </div>
+                    ) : (
+                        <p className="text-walnut-medium font-semibold text-lg mb-2">{Number(product.price).toFixed(2).replace('.', ',')}€</p>
+                    )}
+
                     <p className="text-gray-500 text-[15px] leading-relaxed">{product.description}</p>
 
                     <div className="mt-5 pt-5 border-t border-gray-200">

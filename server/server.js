@@ -63,8 +63,11 @@ async function initDB() {
         await db.query('SELECT 1');
         console.log('✅ Connecté à PostgreSQL (Neon/Supabase)');
 
-        // Création des tables via le schéma uniquement en dev/manuel
-        // Pour Neon, il est préférable d'exécuter schema.sql manuellement dans leur console
+        // Migration : ajout de la colonne sale_price si elle n'existe pas
+        await db.query(`
+            ALTER TABLE products ADD COLUMN IF NOT EXISTS sale_price NUMERIC(10,2) DEFAULT NULL;
+        `);
+        console.log('✅ Colonne sale_price vérifiée');
     } catch (err) {
         console.warn('⚠️ PostgreSQL non disponible — mode fallback (données statiques)');
         console.warn('   ' + err.message);
@@ -259,18 +262,19 @@ app.get('/api/products/:id', async (req, res) => {
 // POST /api/products
 app.post('/api/products', authenticateToken, async (req, res) => {
     try {
-        const { category_id, name, description, price, nutriscore, ingredients, is_featured, image_url } = req.body;
+        const { category_id, name, description, price, sale_price, nutriscore, ingredients, is_featured, image_url } = req.body;
         if (!db) return res.status(503).json({ error: 'Database not available' });
 
         const result = await db.query(`
-            INSERT INTO products (category_id, name, description, price, nutriscore, ingredients, is_featured, image_url)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            INSERT INTO products (category_id, name, description, price, sale_price, nutriscore, ingredients, is_featured, image_url)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING id
         `, [
             category_id || null,
             name,
             description || '',
             price || 0,
+            sale_price || null,
             nutriscore || null,
             ingredients ? JSON.stringify(ingredients) : '[]',
             Boolean(is_featured),
@@ -288,18 +292,19 @@ app.post('/api/products', authenticateToken, async (req, res) => {
 app.put('/api/products/:id', authenticateToken, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
-        const { category_id, name, description, price, nutriscore, ingredients, is_featured, image_url } = req.body;
+        const { category_id, name, description, price, sale_price, nutriscore, ingredients, is_featured, image_url } = req.body;
         if (!db) return res.status(503).json({ error: 'Database not available' });
 
         await db.query(`
-            UPDATE products 
-            SET category_id = $1, name = $2, description = $3, price = $4, nutriscore = $5, ingredients = $6, is_featured = $7, image_url = $8
-            WHERE id = $9
+            UPDATE products
+            SET category_id = $1, name = $2, description = $3, price = $4, sale_price = $5, nutriscore = $6, ingredients = $7, is_featured = $8, image_url = $9
+            WHERE id = $10
         `, [
             category_id || null,
             name,
             description || '',
             price || 0,
+            sale_price || null,
             nutriscore || null,
             ingredients ? JSON.stringify(ingredients) : '[]',
             Boolean(is_featured),
